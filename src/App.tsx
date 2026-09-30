@@ -22,20 +22,32 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      /* Casos: rutas estáticas antes de :id */
-      { path: 'casos/nuevo', element: <CaseWizardPage /> },
-      { path: 'casos/:id/editar', element: <CaseEditPage /> },
-      { path: 'casos/:id/avance', element: <CaseProgressPage /> },
-      { path: 'casos/:id', element: <CaseDetailPage /> },
-      { path: 'casos', element: <CaseListPage /> },
-      /* Actuaciones */
-      { path: 'actuaciones/nueva', element: <NotarialWizardPage /> },
-      { path: 'actuaciones/:id', element: <NotarialDetailPage /> },
-      { path: 'actuaciones', element: <NotarialListPage /> },
-      /* Agenda */
-      { path: 'agenda/nueva', element: <ActivityFormPage /> },
-      { path: 'agenda/:id/editar', element: <ActivityFormPage /> },
-      { path: 'agenda', element: <AgendaPage /> },
+      {
+        path: 'casos',
+        children: [
+          { index: true, element: <CaseListPage /> },
+          { path: 'nuevo', element: <CaseWizardPage /> },
+          { path: ':id/editar', element: <CaseEditPage /> },
+          { path: ':id/avance', element: <CaseProgressPage /> },
+          { path: ':id', element: <CaseDetailPage /> },
+        ],
+      },
+      {
+        path: 'actuaciones',
+        children: [
+          { index: true, element: <NotarialListPage /> },
+          { path: 'nueva', element: <NotarialWizardPage /> },
+          { path: ':id', element: <NotarialDetailPage /> },
+        ],
+      },
+      {
+        path: 'agenda',
+        children: [
+          { index: true, element: <AgendaPage /> },
+          { path: 'nueva', element: <ActivityFormPage /> },
+          { path: ':id/editar', element: <ActivityFormPage /> },
+        ],
+      },
       { path: 'sincronizar', element: <SyncPage /> },
       { path: 'ayuda/:slug', element: <HelpTopicPage /> },
       { path: 'ayuda', element: <HelpHubPage /> },
