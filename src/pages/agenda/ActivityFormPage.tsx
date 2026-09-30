@@ -6,7 +6,7 @@ import { uid } from '../../lib/ids'
 import { normalizeTimeInput } from '../../lib/timeGrid'
 import { activityStatusColors } from '../../lib/agendaColors'
 import { useApp } from '../../store/AppContext'
-import { BackLink } from '../../components/AppLayout'
+import { BackLink, BackToHomeLink } from '../../components/AppLayout'
 import { DaySchedulePicker } from '../../components/agenda/DaySchedulePicker'
 import { Button, Card, Field, TextArea, TextInput } from '../../components/ui'
 import { HeartFeedback } from '../../components/HeartFeedback'
@@ -104,7 +104,10 @@ export function ActivityFormPage() {
 
   return (
     <div className="w-full space-y-5">
-      <BackLink to="/agenda">Volver al calendario</BackLink>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <BackToHomeLink />
+        <BackLink to="/agenda">Volver al calendario</BackLink>
+      </div>
       <h1 className="text-3xl font-extrabold">{existing ? 'Editar evento' : 'Nuevo evento'}</h1>
       <Card className="space-y-5">
         <Field label="Título o nombre de la actividad" required error={errors.titulo}>

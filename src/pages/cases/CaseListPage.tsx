@@ -7,6 +7,7 @@ import {
   formatShortDate,
   personNames,
 } from '../../lib/format'
+import { BackToHomeLink } from '../../components/AppLayout'
 import { useApp } from '../../store/AppContext'
 import { Badge, ButtonLink, Card, EmptyState, FilterChip, PageHeader, TextInput } from '../../components/ui'
 
@@ -43,6 +44,7 @@ export function CaseListPage() {
 
   return (
     <div>
+      <BackToHomeLink />
       <PageHeader
         title="Casos judiciales"
         subtitle="Ficha digital del Libro Único de Actuaciones Judiciales."

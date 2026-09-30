@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { useBeforeUnload, useBlocker, useNavigate } from 'react-router-dom'
+import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import {
   Camera,
   Check,
@@ -53,6 +53,36 @@ function initialDraft(codigo: string): NotarialDraft {
     referenciaDocumento: '',
     adjuntos: [],
     folio,
+  }
+}
+
+function draftFromRecord(record: NotarialRecord): NotarialDraft {
+  return {
+    codigo: record.codigo,
+    fechaSolicitud: record.fechaSolicitud,
+    fechaAtencion: record.fechaAtencion ?? '',
+    lugarExpedicion: record.lugarExpedicion ?? 'Santa Rosa',
+    tipo: record.tipo,
+    asunto: record.asunto,
+    estado: record.estado,
+    observaciones: record.observaciones ?? '',
+    personas: record.personas.map((person) => ({
+      ...person,
+      apellidos: person.apellidos ?? '',
+      codigoPais: person.codigoPais ?? '+51',
+      rolEnCaso: person.rolEnCaso ?? '',
+      actuaEnRepresentacion: person.actuaEnRepresentacion ?? false,
+      personaRepresentada: person.personaRepresentada ?? '',
+      documentoRepresentacion: person.documentoRepresentacion ?? '',
+      puedeFirmar: person.puedeFirmar ?? true,
+      usaHuella: person.usaHuella ?? false,
+      testigoRuego: person.testigoRuego ?? false,
+    })),
+    resultado: record.resultado ?? '',
+    fechaEntrega: record.fechaEntrega ?? '',
+    referenciaDocumento: record.referenciaDocumento ?? '',
+    adjuntos: record.adjuntos ?? [],
+    folio: record.folio ?? record.codigo.split('-').at(-1)?.replace(/^0+/, '') ?? '1',
   }
 }
 
@@ -110,9 +140,12 @@ function SectionTitle({
 
 export function NotarialWizardPage() {
   const { notarials, isOnline, saveNotarial } = useApp()
+  const { id } = useParams()
   const navigate = useNavigate()
-  const codigo = useMemo(() => nextCode('AN', notarials.map((item) => item.codigo)), [notarials])
-  const [draft, setDraft] = useState<NotarialDraft>(() => initialDraft(codigo))
+  const existing = useMemo(() => id ? notarials.find((item) => item.id === id) : undefined, [id, notarials])
+  const isEditing = Boolean(existing)
+  const codigo = useMemo(() => existing?.codigo ?? nextCode('AN', notarials.map((item) => item.codigo)), [existing, notarials])
+  const [draft, setDraft] = useState<NotarialDraft>(() => existing ? draftFromRecord(existing) : initialDraft(codigo))
   const [submitted, setSubmitted] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [duplicate, setDuplicate] = useState<NotarialRecord | null>(null)
@@ -154,6 +187,7 @@ export function NotarialWizardPage() {
     const documents = draft.personas.map((person) => person.numeroDocumento?.trim()).filter(Boolean)
     return notarials.find(
       (item) =>
+        item.id !== existing?.id &&
         item.tipo.trim().toLowerCase() === draft.tipo.trim().toLowerCase() &&
         item.fechaSolicitud === draft.fechaSolicitud &&
         item.personas.some((person) => documents.includes(person.numeroDocumento?.trim())),
@@ -179,12 +213,13 @@ export function NotarialWizardPage() {
   }
 
   function saveRecord() {
+    const now = new Date().toISOString()
     const record: NotarialRecord = {
-      id: uid('an'),
+      id: existing?.id ?? uid('an'),
       codigo: draft.codigo,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      syncStatus: isOnline ? 'synced' : 'pending',
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      syncStatus: isOnline ? (existing?.syncStatus ?? 'synced') : 'pending',
       fechaSolicitud: draft.fechaSolicitud,
       fechaAtencion: draft.fechaAtencion || undefined,
       lugarExpedicion: draft.lugarExpedicion.trim(),
@@ -238,11 +273,21 @@ export function NotarialWizardPage() {
     patch({ adjuntos: draft.adjuntos.filter((file) => file.id !== id) })
   }
 
+  if (id && !existing) {
+    return (
+      <Card className="mx-auto max-w-3xl space-y-5 text-center">
+        <h1 className="text-3xl font-extrabold">No encontramos esta actuación</h1>
+        <p className="text-muted">El registro que intenta editar no existe o fue eliminado.</p>
+        <ButtonLink to="/actuaciones">Volver a actuaciones</ButtonLink>
+      </Card>
+    )
+  }
+
   if (savedId) {
     return (
       <Card className="mx-auto max-w-3xl space-y-5 text-center">
         <CheckCircle2 className="mx-auto text-success" size={64} />
-        <p className="text-3xl font-extrabold text-success">Actuación guardada</p>
+        <p className="text-3xl font-extrabold text-success">{isEditing ? 'Cambios guardados' : 'Actuación guardada'}</p>
         <p className="text-xl font-bold">{draft.codigo}</p>
         <p>{isOnline ? 'La información quedó registrada correctamente.' : 'Se guardó en esta tableta y se sincronizará cuando vuelva la conexión.'}</p>
         <div className="flex justify-center gap-3">
@@ -256,11 +301,13 @@ export function NotarialWizardPage() {
 
   return (
     <div className="w-full pb-28">
-      <BackLink to="/actuaciones">Volver a actuaciones</BackLink>
+      <BackLink to={isEditing ? `/actuaciones/${existing?.id}` : '/actuaciones'}>
+        {isEditing ? 'Volver al consolidado' : 'Volver a actuaciones'}
+      </BackLink>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold">Registrar actuación notarial</h1>
-          <p className="mt-1 text-muted">Complete los datos para crear un nuevo registro.</p>
+          <h1 className="text-3xl font-extrabold">{isEditing ? 'Editar actuación notarial' : 'Registrar actuación notarial'}</h1>
+          <p className="mt-1 text-muted">{isEditing ? 'Actualice los datos del registro y guarde los cambios.' : 'Complete los datos para crear un nuevo registro.'}</p>
         </div>
         <div className="rounded-xl border border-line bg-paper px-4 py-3 text-sm font-bold text-muted">
           <span className="text-urgent">*</span> Los campos obligatorios deben completarse
@@ -444,10 +491,10 @@ export function NotarialWizardPage() {
         {submitted && !formComplete ? <div className="rounded-2xl border-2 border-urgent bg-urgent-soft px-4 py-2 font-extrabold text-urgent" role="alert"><XCircle className="mr-2 inline" />No se pudo guardar. Revise los campos obligatorios marcados en rojo; su información permanece en el formulario.</div> : null}
 
         <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-2xl border border-line bg-paper/95 p-4 shadow-xl backdrop-blur">
-          <Button type="button" tone="secondary" onClick={() => navigate('/actuaciones')}>Cancelar</Button>
+          <Button type="button" tone="secondary" onClick={() => navigate(isEditing ? `/actuaciones/${existing?.id}` : '/actuaciones')}>Cancelar</Button>
           <div className="flex items-center gap-4">
             <span className={`font-bold ${formComplete ? 'text-success' : 'text-muted'}`}>{formComplete ? 'Formulario completo' : 'Complete los campos obligatorios'}</span>
-            <Button type="submit" className="px-8" disabled={uploading.length > 0}>Guardar actuación notarial</Button>
+            <Button type="submit" className="px-8" disabled={uploading.length > 0}>{isEditing ? 'Guardar cambios' : 'Guardar actuación notarial'}</Button>
           </div>
         </div>
       </form>

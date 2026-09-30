@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { CircleHelp, RefreshCw, Wifi, WifiOff } from 'lucide-react'
+import { ArrowLeft, CircleHelp, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { useApp } from '../store/AppContext'
 import { AlertBanner, Button, Modal } from './ui'
 import { COURT_NAME } from '../types'
@@ -132,8 +132,25 @@ export function SavedBanner({ online }: { online: boolean }) {
 export function BackLink({ to, children }: { to: string; children: string }) {
   const navigate = useNavigate()
   return (
-    <Button type="button" tone="secondary" className="mb-4" onClick={() => navigate(to)}>
-      ← {children}
+    <Button type="button" tone="secondary" className="mb-4 gap-2" onClick={() => navigate(to)}>
+      <ArrowLeft size={22} strokeWidth={2.5} aria-hidden />
+      {children}
+    </Button>
+  )
+}
+
+/** Regreso al menú principal desde módulos de casos, notariales o agenda. */
+export function BackToHomeLink({ onClick }: { onClick?: () => void }) {
+  const navigate = useNavigate()
+  return (
+    <Button
+      type="button"
+      tone="secondary"
+      className="mb-4 gap-2"
+      onClick={() => (onClick ? onClick() : navigate('/'))}
+    >
+      <ArrowLeft size={22} strokeWidth={2.5} aria-hidden />
+      Volver al inicio
     </Button>
   )
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { APP_TODAY, type CalendarActivity } from '../../types'
 import { formatMonthYear, formatWeekdayDate } from '../../lib/format'
+import { BackToHomeLink } from '../../components/AppLayout'
 import { useApp } from '../../store/AppContext'
 import { ActivityDetailModal } from '../../components/agenda/ActivityDetailModal'
 import { DayTimeGrid } from '../../components/agenda/DayTimeGrid'
@@ -30,6 +31,7 @@ export function AgendaPage() {
 
   return (
     <div className="relative pb-24">
+      <BackToHomeLink />
       <PageHeader title="Agenda" subtitle="Calendario de actividades y reuniones." />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

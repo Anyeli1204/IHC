@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { formatShortDate, notarialStatusLabels, notarialTypeLabel, personNames } from '../../lib/format'
+import { BackToHomeLink } from '../../components/AppLayout'
 import { useApp } from '../../store/AppContext'
 import { Badge, ButtonLink, Card, EmptyState, FilterChip, PageHeader, TextInput } from '../../components/ui'
 
@@ -32,6 +33,7 @@ export function NotarialListPage() {
 
   return (
     <div>
+      <BackToHomeLink />
       <PageHeader
         title="Actuaciones notariales"
         subtitle="Dejar constancia y encontrar un registro."

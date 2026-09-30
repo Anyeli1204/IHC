@@ -37,7 +37,7 @@ import {
 const CONCILIATION_RESULTS = ['Acuerdo total', 'Acuerdo parcial', 'Sin acuerdo', 'Inasistencia']
 const COUNTRY_CODES = ['+51', '+54', '+56', '+57', '+591', '+593', '+1', '+34']
 
-export function CaseDetailPage() {
+export function CaseDetailPage({ editing = false }: { editing?: boolean }) {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const { cases, saveCase, isOnline } = useApp()
@@ -214,6 +214,7 @@ export function CaseDetailPage() {
       <ButtonLink to="/casos" tone="secondary" className="text-lg">
         ← Volver a casos
       </ButtonLink>
+      {editing ? <p className="rounded-xl border-2 border-info bg-info-soft px-4 py-3 font-extrabold text-info">Modo edición · Los cambios se guardan por sección.</p> : null}
       <div
         className={`rounded-2xl border-2 bg-paper px-5 py-4 ${needs ? 'border-urgent bg-urgent-soft/25' : 'border-line'}`}
       >

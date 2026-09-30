@@ -4,7 +4,7 @@ import { AppLayout } from './components/AppLayout'
 import { HomePage } from './pages/HomePage'
 import { CaseListPage } from './pages/cases/CaseListPage'
 import { CaseWizardPage } from './pages/cases/CaseWizardPage'
-import { CaseDetailPage } from './pages/cases/CaseDetailPage'
+import { CaseSummaryPage } from './pages/cases/CaseSummaryPage'
 import { CaseEditPage } from './pages/cases/CaseEditPage'
 import { CaseProgressPage } from './pages/cases/CaseProgressPage'
 import { NotarialListPage } from './pages/notarial/NotarialListPage'
@@ -29,7 +29,7 @@ const router = createBrowserRouter([
           { path: 'nuevo', element: <CaseWizardPage /> },
           { path: ':id/editar', element: <CaseEditPage /> },
           { path: ':id/avance', element: <CaseProgressPage /> },
-          { path: ':id', element: <CaseDetailPage /> },
+          { path: ':id', element: <CaseSummaryPage /> },
         ],
       },
       {
@@ -37,6 +37,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <NotarialListPage /> },
           { path: 'nueva', element: <NotarialWizardPage /> },
+          { path: ':id/editar', element: <NotarialWizardPage /> },
           { path: ':id', element: <NotarialDetailPage /> },
         ],
       },

@@ -2,7 +2,8 @@ import { useParams } from 'react-router-dom'
 import { formatLongDate, notarialStatusLabels, notarialTypeLabel, roleLabels } from '../../lib/format'
 import { useApp } from '../../store/AppContext'
 import { BackLink } from '../../components/AppLayout'
-import { Badge, Card, EmptyState } from '../../components/ui'
+import { Badge, ButtonLink, Card, EmptyState } from '../../components/ui'
+import { Pencil } from 'lucide-react'
 
 export function NotarialDetailPage() {
   const { id } = useParams()
@@ -18,7 +19,10 @@ export function NotarialDetailPage() {
 
   return (
     <div className="w-full space-y-5">
-      <BackLink to="/actuaciones">Volver a actuaciones</BackLink>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <BackLink to="/actuaciones">Volver a actuaciones</BackLink>
+        <ButtonLink to={`/actuaciones/${item.id}/editar`}><Pencil size={20} /> Editar actuación</ButtonLink>
+      </div>
       <div className={`rounded-2xl border-2 bg-paper px-5 py-4 ${isPending ? 'border-warning bg-warning-soft/30' : 'border-line'}`}>
         <p className="font-extrabold text-forest">{item.codigo}</p>
         <h1 className="text-3xl font-extrabold">{notarialTypeLabel(item.tipo)}</h1>

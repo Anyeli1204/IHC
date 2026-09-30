@@ -5,6 +5,7 @@ import { conflictLabels, formatLongDate, progressLabels, roleLabels } from '../.
 import { emptyPerson, nextCode, uid } from '../../lib/ids'
 import { useApp } from '../../store/AppContext'
 import { PeopleEditor, validatePeople } from '../../components/PeopleEditor'
+import { BackToHomeLink } from '../../components/AppLayout'
 import { Button, ButtonLink, Card, Field, Help, Modal, Select, TextArea, TextInput } from '../../components/ui'
 import { HeartFeedback } from '../../components/HeartFeedback'
 import { trackHeartEvent } from '../../lib/heart'
@@ -94,7 +95,7 @@ export function CaseWizardPage() {
 
   function requestCancel() {
     if (hasDraftContent()) setLeaveConfirm(true)
-    else navigate('/casos')
+    else navigate('/')
   }
 
   function save() {
@@ -187,9 +188,7 @@ export function CaseWizardPage() {
 
   return (
     <div className="w-full">
-      <Button type="button" tone="secondary" className="mb-4" onClick={requestCancel}>
-        ← Volver a casos
-      </Button>
+      <BackToHomeLink onClick={requestCancel} />
       <h1 className="mb-2 text-3xl font-extrabold">Registrar caso judicial</h1>
       <Help>Esta ficha digital conserva la información del Libro Único de Actuaciones Judiciales.</Help>
       <form className="mt-6 space-y-6" onSubmit={(event) => { event.preventDefault(); validateAll() }} noValidate>
@@ -318,7 +317,7 @@ export function CaseWizardPage() {
               tone="danger"
               onClick={() => {
                 setLeaveConfirm(false)
-                navigate('/casos')
+                navigate('/')
               }}
             >
               Salir sin guardar
