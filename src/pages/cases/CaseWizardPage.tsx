@@ -55,6 +55,11 @@ export function CaseWizardPage() {
     setDraft((prev) => ({ ...prev, ...partial }))
   }
 
+  function fieldState(value: unknown, required = true) {
+    const complete = typeof value === 'string' ? Boolean(value.trim()) : Boolean(value)
+    return { complete, invalid: required && attempted && !complete }
+  }
+
   function validateAll() {
     setAttempted(true)
     const next: Record<string, string> = {}
@@ -183,13 +188,13 @@ export function CaseWizardPage() {
         <Card className={`space-y-5 border-2 ${dataComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
           <CaseSectionTitle number={1} title="Datos del caso" complete={dataComplete} invalid={attempted && !dataComplete} />
           <div className="grid grid-cols-2 gap-5">
-          <Field label="Código del caso" hint="Numeración correlativa generada automáticamente." htmlFor="codigo">
+          <Field label="Código del caso" hint="Numeración correlativa generada automáticamente." htmlFor="codigo" complete>
             <TextInput id="codigo" value={draft.codigo} readOnly className="touch-target w-full cursor-not-allowed rounded-xl border-2 border-line bg-stone-200 px-4 font-bold text-muted" />
           </Field>
-          <Field label="Fecha de registro" required error={errors.fechaRegistro}>
+          <Field label="Fecha de registro" required error={errors.fechaRegistro} {...fieldState(draft.fechaRegistro)}>
             <TextInput type="date" value={draft.fechaRegistro} onChange={(e) => patch({ fechaRegistro: e.target.value })} />
           </Field>
-          <Field label="Materia" required error={errors.tipoConflicto} htmlFor="tipo" hint="Tema principal del caso. No es el tipo de actuación judicial.">
+          <Field label="Materia" required error={errors.tipoConflicto} htmlFor="tipo" hint="Tema principal del caso. No es el tipo de actuación judicial." {...fieldState(draft.tipoConflicto)}>
             <Select
               id="tipo"
               value={draft.tipoConflicto}
@@ -203,16 +208,16 @@ export function CaseWizardPage() {
               ))}
             </Select>
           </Field>
-          <Field label="Descripción de la controversia" required hint="Explique qué ocurrió y qué solicitan las partes." error={errors.motivo} htmlFor="motivo">
+          <Field label="Descripción de la controversia" required hint="Explique qué ocurrió y qué solicitan las partes." error={errors.motivo} htmlFor="motivo" {...fieldState(draft.motivo)}>
             <TextArea id="motivo" value={draft.motivo} onChange={(e) => patch({ motivo: e.target.value })} />
           </Field>
-          <Field label="Lugar donde se registra" required error={errors.lugarRegistro} htmlFor="lugar">
+          <Field label="Lugar donde se registra" required error={errors.lugarRegistro} htmlFor="lugar" {...fieldState(draft.lugarRegistro)}>
             <TextInput id="lugar" value={draft.lugarRegistro} onChange={(e) => patch({ lugarRegistro: e.target.value })} />
           </Field>
-          <Field label="Estado del caso">
+          <Field label="Estado del caso" complete>
             <TextInput value="En trámite" readOnly />
           </Field>
-          <Field label="Observaciones" optional htmlFor="obs">
+          <Field label="Observaciones" optional htmlFor="obs" complete={Boolean(draft.observaciones.trim())}>
             <TextArea id="obs" value={draft.observaciones} onChange={(e) => patch({ observaciones: e.target.value })} />
           </Field>
           </div>
@@ -225,30 +230,31 @@ export function CaseWizardPage() {
             people={draft.personas}
             onChange={(personas) => patch({ personas })}
             roles={['solicitante', 'invitado', 'testigo']}
-            help="Personas que participan en el caso. El nombre, la identificación, el domicilio y el rol son obligatorios; el teléfono es opcional."
+            help="Personas que participan en el caso. Nombres, apellidos, identificación, domicilio y rol son obligatorios; el teléfono con código de país es opcional."
+            showErrors={attempted}
           />
         </Card>
 
         <Card className={`space-y-5 border-2 ${actionComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
           <CaseSectionTitle number={3} title="Primera actuación judicial" complete={actionComplete} invalid={attempted && !actionComplete} />
           <div className="grid grid-cols-2 gap-5">
-          <Field label="Tipo de actuación judicial" required htmlFor="actuacion-tipo" hint="La materia identifica el caso; este campo identifica la actuación realizada.">
+          <Field label="Tipo de actuación judicial" required htmlFor="actuacion-tipo" hint="La materia identifica el caso; este campo identifica la actuación realizada." {...fieldState(draft.tipoActuacionInicial)}>
             <Select id="actuacion-tipo" value={draft.tipoActuacionInicial} onChange={(e) => patch({ tipoActuacionInicial: e.target.value as CaseDraft['tipoActuacionInicial'] })}>
               {(Object.keys(progressLabels) as CaseDraft['tipoActuacionInicial'][]).map((key) => (
                 <option key={key} value={key}>{progressLabels[key]}</option>
               ))}
             </Select>
           </Field>
-          <Field label="Fecha de la actuación" required htmlFor="actuacion-fecha">
+          <Field label="Fecha de la actuación" required htmlFor="actuacion-fecha" {...fieldState(draft.fechaActuacionInicial)}>
             <TextInput id="actuacion-fecha" type="date" value={draft.fechaActuacionInicial} onChange={(e) => patch({ fechaActuacionInicial: e.target.value })} />
           </Field>
-          <Field label="Descripción de la actuación" required htmlFor="desc" error={errors.descripcionInicial}>
+          <Field label="Descripción de la actuación" required htmlFor="desc" error={errors.descripcionInicial} {...fieldState(draft.descripcionInicial)}>
             <TextArea id="desc" value={draft.descripcionInicial} onChange={(e) => patch({ descripcionInicial: e.target.value })} placeholder="Ej.: Se recibió la demanda presentada por la parte solicitante." />
           </Field>
-          <Field label="Resultado de la actuación" optional htmlFor="resultado">
+          <Field label="Resultado de la actuación" optional htmlFor="resultado" complete={Boolean(draft.resultadoInicial.trim())}>
             <TextArea id="resultado" value={draft.resultadoInicial} onChange={(e) => patch({ resultadoInicial: e.target.value })} />
           </Field>
-          <Field label="Documentos o evidencia" optional hint="Puede seleccionar uno o varios archivos.">
+          <Field label="Documentos o evidencia" optional hint="Puede seleccionar uno o varios archivos." complete={draft.adjuntosIniciales.length > 0}>
             <TextInput type="file" multiple onChange={addInitialEvidence} />
             {draft.adjuntosIniciales.length ? (
               <ul className="mt-2 space-y-1 text-sm font-bold text-forest">
@@ -256,7 +262,7 @@ export function CaseWizardPage() {
               </ul>
             ) : null}
           </Field>
-          <Field label="Próxima atención" optional htmlFor="prox">
+          <Field label="Próxima atención" optional htmlFor="prox" complete={Boolean(draft.proximaAtencion)}>
             <TextInput
               id="prox"
               type="date"

@@ -58,12 +58,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [syncPhase, setSyncPhase] = useState<SyncPhase>('idle')
   const [syncProgress, setSyncProgress] = useState({ done: 0, total: 0 })
   const [showBackOnline, setShowBackOnline] = useState(false)
+  const pendingCount = pendingOf(state)
 
   useEffect(() => {
     saveState(state)
   }, [state])
 
-  const pendingCount = pendingOf(state)
+  useEffect(() => {
+    if (showBackOnline && pendingCount === 0) {
+      setShowBackOnline(false)
+    }
+  }, [showBackOnline, pendingCount])
 
   const setOnline = useCallback((value: boolean) => {
     setState((prev) => {
@@ -121,6 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const runSync = useCallback((fail = false) => {
+    setShowBackOnline(false)
     const total = pendingOf(state)
     setSyncPhase('running')
     setSyncProgress({ done: 0, total: Math.max(total, 1) })

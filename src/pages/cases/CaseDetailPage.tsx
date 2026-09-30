@@ -35,6 +35,7 @@ import {
 } from '../../components/ui'
 
 const CONCILIATION_RESULTS = ['Acuerdo total', 'Acuerdo parcial', 'Sin acuerdo', 'Inasistencia']
+const COUNTRY_CODES = ['+51', '+54', '+56', '+57', '+591', '+593', '+1', '+34']
 
 export function CaseDetailPage() {
   const { id } = useParams()
@@ -135,6 +136,7 @@ export function CaseDetailPage() {
     if (!editPerson) return
     if (
       !editPerson.nombres.trim() ||
+      !editPerson.apellidos?.trim() ||
       !editPerson.tipoDocumento?.trim() ||
       !editPerson.numeroDocumento?.trim() ||
       !editPerson.comunidad.trim()
@@ -330,7 +332,7 @@ export function CaseDetailPage() {
                   <p className="text-base text-muted">{person.tipoDocumento || 'Documento'}: {person.numeroDocumento}</p>
                 ) : null}
                 <p className="text-base">Domicilio: {person.comunidad}</p>
-                {person.telefono ? <p className="text-base text-muted">Teléfono: {person.telefono}</p> : null}
+                {person.telefono ? <p className="text-base text-muted">Teléfono: {person.codigoPais ?? '+51'} {person.telefono}</p> : null}
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button type="button" tone="secondary" onClick={() => setEditPerson({ ...person })}>
                     Editar
@@ -454,12 +456,14 @@ export function CaseDetailPage() {
       {editPerson ? (
         <Modal title={form.personas.some((p) => p.id === editPerson.id) ? 'Editar parte involucrada' : 'Agregar parte involucrada'} onClose={() => setEditPerson(null)}>
           <div className="space-y-4">
-            <Field label="Nombres y apellidos" required>
-              <TextInput
-                value={editPerson.nombres}
-                onChange={(e) => setEditPerson({ ...editPerson, nombres: e.target.value })}
-              />
-            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Nombres" required>
+                <TextInput value={editPerson.nombres} onChange={(e) => setEditPerson({ ...editPerson, nombres: e.target.value })} />
+              </Field>
+              <Field label="Apellidos" required>
+                <TextInput value={editPerson.apellidos ?? ''} onChange={(e) => setEditPerson({ ...editPerson, apellidos: e.target.value })} />
+              </Field>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Tipo de documento" required>
                 <Select value={editPerson.tipoDocumento ?? ''} onChange={(e) => setEditPerson({ ...editPerson, tipoDocumento: e.target.value })}>
@@ -480,10 +484,12 @@ export function CaseDetailPage() {
               />
             </Field>
             <Field label="Teléfono" optional>
-              <TextInput
-                value={editPerson.telefono ?? ''}
-                onChange={(e) => setEditPerson({ ...editPerson, telefono: e.target.value })}
-              />
+              <div className="flex gap-2">
+                <Select className="touch-target w-32 rounded-xl border-2 border-line bg-paper px-3" value={editPerson.codigoPais ?? '+51'} onChange={(e) => setEditPerson({ ...editPerson, codigoPais: e.target.value })} aria-label="Código de país">
+                  {COUNTRY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+                </Select>
+                <TextInput type="tel" value={editPerson.telefono ?? ''} onChange={(e) => setEditPerson({ ...editPerson, telefono: e.target.value })} />
+              </div>
             </Field>
             <Field label="Rol de la parte" required>
               <Select

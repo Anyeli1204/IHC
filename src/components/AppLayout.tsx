@@ -82,6 +82,7 @@ export function AppLayout() {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => {
+                dismissBackOnline()
                 navigate('/sincronizar')
                 runSync(false)
               }}
