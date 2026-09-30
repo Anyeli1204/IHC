@@ -18,6 +18,8 @@ import { emptyPerson, nextCode, uid } from '../../lib/ids'
 import { useApp } from '../../store/AppContext'
 import { BackLink } from '../../components/AppLayout'
 import { Button, ButtonLink, Card, Field, Help, Modal, Select, TextArea, TextInput } from '../../components/ui'
+import { HeartFeedback } from '../../components/HeartFeedback'
+import { trackHeartEvent } from '../../lib/heart'
 
 const DOCUMENT_TYPES = ['DNI', 'CE', 'PASS']
 const COUNTRY_CODES = ['+51', '+54', '+56', '+57', '+591', '+593', '+1', '+34']
@@ -121,6 +123,7 @@ export function NotarialWizardPage() {
   const firstSection = useRef<HTMLElement>(null)
   const peopleSection = useRef<HTMLElement>(null)
   const resultSection = useRef<HTMLElement>(null)
+  const taskStartedAt = useRef(Date.now())
   const blocker = useBlocker(dirty && !savedId)
 
   useBeforeUnload((event) => {
@@ -161,6 +164,8 @@ export function NotarialWizardPage() {
     event.preventDefault()
     setSubmitted(true)
     if (!formComplete) {
+      const errorCount = Number(!caseComplete) + Number(!peopleComplete) + Number(!resultComplete)
+      trackHeartEvent('validation_error', 'notarial', { errorCount })
       const target = !caseComplete ? firstSection : !peopleComplete ? peopleSection : resultSection
       target.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
@@ -195,6 +200,7 @@ export function NotarialWizardPage() {
       folio: draft.folio,
     }
     saveNotarial(record)
+    trackHeartEvent('task_completed', 'notarial', { durationMs: Date.now() - taskStartedAt.current })
     setDirty(false)
     setDuplicate(null)
     setSavedId(record.id)
@@ -243,6 +249,7 @@ export function NotarialWizardPage() {
           <ButtonLink to={`/actuaciones/${savedId}`}>Ver actuación</ButtonLink>
           <ButtonLink to="/actuaciones" tone="secondary">Volver a actuaciones</ButtonLink>
         </div>
+        <HeartFeedback area="notarial" />
       </Card>
     )
   }

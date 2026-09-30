@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { APP_TODAY, type ActivityStatus, type CalendarActivity } from '../../types'
 import { activityStatusLabels } from '../../lib/format'
@@ -9,6 +9,8 @@ import { useApp } from '../../store/AppContext'
 import { BackLink } from '../../components/AppLayout'
 import { DaySchedulePicker } from '../../components/agenda/DaySchedulePicker'
 import { Button, Card, Field, TextArea, TextInput } from '../../components/ui'
+import { HeartFeedback } from '../../components/HeartFeedback'
+import { trackHeartEvent } from '../../lib/heart'
 
 export function ActivityFormPage() {
   const { id } = useParams()
@@ -31,6 +33,7 @@ export function ActivityFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const taskStartedAt = useRef(Date.now())
 
   const sameDay = activities.filter((a) => a.fecha === fecha && a.id !== id)
 
@@ -45,7 +48,10 @@ export function ActivityFormPage() {
       next.horaTermino = 'La hora de término debe ser posterior a la hora de inicio.'
     }
     setErrors(next)
-    if (Object.keys(next).length > 0) return
+    if (Object.keys(next).length > 0) {
+      trackHeartEvent('validation_error', 'agenda', { errorCount: Object.keys(next).length })
+      return
+    }
 
     const record: CalendarActivity = {
       id: existing?.id ?? uid('act'),
@@ -64,6 +70,7 @@ export function ActivityFormPage() {
     }
     setSaving(true)
     saveActivity(record)
+    trackHeartEvent('task_completed', 'agenda', { durationMs: Date.now() - taskStartedAt.current })
     setSaved(true)
     setSaving(false)
   }
@@ -89,6 +96,7 @@ export function ActivityFormPage() {
               Volver al inicio
             </Button>
           </div>
+          <HeartFeedback area="agenda" />
         </Card>
       </div>
     )

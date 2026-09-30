@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react'
+import { useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { APP_TODAY, type CaseDraft, type CaseRecord, type ConflictType } from '../../types'
 import { conflictLabels, formatLongDate, progressLabels, roleLabels } from '../../lib/format'
@@ -6,6 +6,8 @@ import { emptyPerson, nextCode, uid } from '../../lib/ids'
 import { useApp } from '../../store/AppContext'
 import { PeopleEditor, validatePeople } from '../../components/PeopleEditor'
 import { Button, ButtonLink, Card, Field, Help, Modal, Select, TextArea, TextInput } from '../../components/ui'
+import { HeartFeedback } from '../../components/HeartFeedback'
+import { trackHeartEvent } from '../../lib/heart'
 
 function CaseSectionTitle({ number, title, complete, invalid }: { number: number; title: string; complete: boolean; invalid: boolean }) {
   return (
@@ -50,6 +52,7 @@ export function CaseWizardPage() {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [leaveConfirm, setLeaveConfirm] = useState(false)
   const [saving, setSaving] = useState(false)
+  const taskStartedAt = useRef(Date.now())
 
   function patch(partial: Partial<CaseDraft>) {
     setDraft((prev) => ({ ...prev, ...partial }))
@@ -71,6 +74,9 @@ export function CaseWizardPage() {
     if (message) next.personas = message
     if (!draft.descripcionInicial.trim()) next.descripcionInicial = 'Describa la primera actuación judicial.'
     setErrors(next)
+    if (Object.keys(next).length > 0) {
+      trackHeartEvent('validation_error', 'casos', { errorCount: Object.keys(next).length })
+    }
     if (Object.keys(next).length === 0) save()
   }
 
@@ -127,6 +133,7 @@ export function CaseWizardPage() {
       ],
     }
     saveCase(record)
+    trackHeartEvent('task_completed', 'casos', { durationMs: Date.now() - taskStartedAt.current })
     setSavedId(record.id)
     setSaving(false)
   }
@@ -172,6 +179,7 @@ export function CaseWizardPage() {
               Volver al inicio
             </ButtonLink>
           </div>
+          <HeartFeedback area="casos" />
         </Card>
       </div>
     )

@@ -1,12 +1,26 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CircleHelp, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { useApp } from '../store/AppContext'
 import { AlertBanner, Button, Modal } from './ui'
 import { COURT_NAME } from '../types'
+import { trackHeartEvent, type HeartArea } from '../lib/heart'
 
 export function AppLayout() {
   const { isOnline, pendingCount, setOnline, showBackOnline, runSync, dismissBackOnline } = useApp()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const area: HeartArea = location.pathname.startsWith('/casos')
+      ? 'casos'
+      : location.pathname.startsWith('/actuaciones')
+        ? 'notarial'
+        : location.pathname.startsWith('/agenda')
+          ? 'agenda'
+          : 'general'
+    trackHeartEvent('page_view', area, { path: location.pathname })
+  }, [location.pathname])
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
