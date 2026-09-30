@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { RefreshCw, Wifi, WifiOff } from 'lucide-react'
+import { CircleHelp, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { useApp } from '../store/AppContext'
 import { AlertBanner, Button, Modal } from './ui'
 import { COURT_NAME } from '../types'
@@ -22,6 +22,13 @@ export function AppLayout() {
             </Link>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
+            <Link
+              to="/ayuda"
+              className="touch-target inline-flex items-center gap-2 rounded-xl border-2 border-line bg-paper px-4 py-2 font-extrabold text-forest hover:bg-forest-soft"
+            >
+              <CircleHelp size={22} aria-hidden />
+              Ayuda
+            </Link>
             <div
               className={`flex items-center gap-2 rounded-full border-2 px-4 py-2 text-base font-extrabold ${
                 isOnline ? 'border-success bg-success-soft text-success' : 'border-offline bg-offline-soft text-offline'

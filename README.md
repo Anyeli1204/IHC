@@ -30,3 +30,10 @@ El diseño está pensado para **tableta de 10 pulgadas en horizontal** (**1280×
 - Registrar y consultar una actuación notarial, con aviso de posible duplicado.
 - Agenda mensual, detalle de un día y nueva actividad.
 - Trabajo sin Internet, guardado local y sincronización.
+
+## Ayuda y documentación
+
+- **En la aplicación:** barra superior → **Ayuda** (`/ayuda`). Manual por temas, búsqueda e **Imprimir / PDF** en cada artículo.
+- **Sin conexión:** todo el manual integrado funciona sin Internet (contenido embebido en la app).
+- **Documento descargable:** `public/docs/manual-usuario.html` — en Ayuda use *Descargar manual (HTML)* para guardarlo en la tableta.
+- **Desarrollo:** el contenido editable está en `src/data/helpTopics.ts`.

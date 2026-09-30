@@ -227,6 +227,30 @@ export function seedState(): PersistedState {
       estado: 'programada',
       casoCodigo: 'CJ-2026-0042',
     },
+    {
+      id: 'act-5',
+      createdAt: '2026-05-01T09:00:00',
+      updatedAt: '2026-05-01T09:00:00',
+      syncStatus: 'synced',
+      titulo: 'Visita de seguimiento',
+      tipo: 'visita',
+      fecha: '2026-05-18',
+      horaInicio: '14:00',
+      horaTermino: '15:00',
+      lugar: 'Comunidad San José',
+      estado: 'realizada',
+    },
+    {
+      id: 'act-6',
+      createdAt: '2026-05-01T09:00:00',
+      updatedAt: '2026-05-01T09:00:00',
+      syncStatus: 'synced',
+      titulo: 'Reunión pospuesta',
+      tipo: 'reunion',
+      fecha: '2026-05-18',
+      estado: 'cancelada',
+      descripcion: 'Se reprogramará',
+    },
   ]
 
   return {

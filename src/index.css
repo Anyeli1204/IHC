@@ -149,4 +149,20 @@ textarea {
 
 }
 
+@media print {
+  header,
+  .print\:hidden,
+  a[href="/ayuda"],
+  button {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .help-print-area {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
 

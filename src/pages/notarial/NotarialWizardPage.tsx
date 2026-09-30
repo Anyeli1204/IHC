@@ -21,7 +21,12 @@ import { Button, ButtonLink, Card, Field, Help, Modal, Select, TextArea, TextInp
 
 const DOCUMENT_TYPES = ['DNI', 'CE', 'PASS']
 const COUNTRY_CODES = ['+51', '+54', '+56', '+57', '+591', '+593', '+1', '+34']
-const PERSON_COLORS = ['bg-sky-soft/35', 'bg-pending-soft/30', 'bg-amber-soft/35', 'bg-stone-100']
+const PERSON_COLORS = ['bg-[#f5f3ff]', 'bg-[#eff6ff]', 'bg-[#fdf4ff]', 'bg-[#f8fafc]']
+const NOTARIAL_TYPES = [
+  { group: 'Constancias', options: ['Constancia domiciliaria', 'Constancia de posesión', 'Constancia de convivencia', 'Constancia de supervivencia', 'Constancia de viudez', 'Otra constancia'] },
+  { group: 'Certificaciones', options: ['Certificación de firma', 'Certificación de copia', 'Certificación de transcripción', 'Certificación de apertura de libro'] },
+  { group: 'Otros actos', options: ['Transferencia posesoria', 'Contrato', 'Acto o decisión de organización comunal', 'Otro acto autorizado'] },
+]
 
 function todayLocal() {
   const now = new Date()
@@ -30,10 +35,12 @@ function todayLocal() {
 }
 
 function initialDraft(codigo: string): NotarialDraft {
+  const folio = codigo.split('-').at(-1)?.replace(/^0+/, '') || '1'
   return {
     codigo,
     fechaSolicitud: todayLocal(),
     fechaAtencion: '',
+    lugarExpedicion: 'Santa Rosa',
     tipo: '',
     asunto: '',
     estado: 'pendiente',
@@ -43,6 +50,7 @@ function initialDraft(codigo: string): NotarialDraft {
     fechaEntrega: '',
     referenciaDocumento: '',
     adjuntos: [],
+    folio,
   }
 }
 
@@ -53,7 +61,9 @@ function personIsComplete(person: Person) {
       person.tipoDocumento &&
       person.numeroDocumento?.trim() &&
       person.comunidad.trim() &&
-      person.rolEnCaso?.trim(),
+      person.rolEnCaso?.trim() &&
+      (!person.actuaEnRepresentacion || (person.personaRepresentada?.trim() && person.documentoRepresentacion?.trim())) &&
+      (person.puedeFirmar !== false || person.usaHuella || person.testigoRuego),
   )
 }
 
@@ -127,7 +137,7 @@ export function NotarialWizardPage() {
     patch({ personas: draft.personas.map((person, itemIndex) => (itemIndex === index ? { ...person, ...partial } : person)) })
   }
 
-  const caseComplete = Boolean(draft.fechaSolicitud && draft.tipo.trim() && draft.asunto.trim() && draft.estado)
+  const caseComplete = Boolean(draft.fechaSolicitud && draft.lugarExpedicion.trim() && draft.tipo.trim() && draft.asunto.trim() && draft.estado)
   const peopleComplete = draft.personas.length > 0 && draft.personas.every(personIsComplete)
   const resultComplete = Boolean(draft.resultado.trim())
   const formComplete = caseComplete && peopleComplete && resultComplete
@@ -171,6 +181,8 @@ export function NotarialWizardPage() {
       updatedAt: new Date().toISOString(),
       syncStatus: isOnline ? 'synced' : 'pending',
       fechaSolicitud: draft.fechaSolicitud,
+      fechaAtencion: draft.fechaAtencion || undefined,
+      lugarExpedicion: draft.lugarExpedicion.trim(),
       tipo: draft.tipo.trim(),
       asunto: draft.asunto.trim(),
       estado: draft.estado,
@@ -180,6 +192,7 @@ export function NotarialWizardPage() {
       fechaEntrega: draft.fechaEntrega || undefined,
       referenciaDocumento: draft.referenciaDocumento.trim() || undefined,
       adjuntos: draft.adjuntos,
+      folio: draft.folio,
     }
     saveNotarial(record)
     setDirty(false)
@@ -235,7 +248,7 @@ export function NotarialWizardPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-7rem)] min-h-0 w-full flex-col overflow-hidden">
+    <div className="w-full pb-28">
       <BackLink to="/actuaciones">Volver a actuaciones</BackLink>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -249,23 +262,35 @@ export function NotarialWizardPage() {
 
       <Help>Los campos completos se marcarán en verde. Si falta información al guardar, permanecerá todo lo escrito y se señalarán los campos pendientes.</Help>
 
-      <form className="mt-3 flex min-h-0 flex-1 flex-col gap-3" onSubmit={validateAndSave} noValidate>
-        <div className="grid min-h-0 flex-1 grid-cols-3 gap-5" aria-label="Secciones del registro notarial">
-        <Card className={`h-full min-h-0 min-w-0 overflow-y-auto border-2 ${caseComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+      <form className="mt-6 space-y-6" onSubmit={validateAndSave} noValidate>
+        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${caseComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={firstSection} className="scroll-mt-5">
-            <SectionTitle number={1} title="Información del caso" description="Datos generales de la actuación notarial." complete={caseComplete} invalid={submitted && !caseComplete} />
-            <div className="grid grid-cols-1 gap-5">
-              <Field label="Código o número del caso" hint="Se genera automáticamente y no puede modificarse." complete>
+            <SectionTitle number={1} title="Datos del acto notarial" description="Información que se incorpora al registro del Libro Notarial." complete={caseComplete} invalid={submitted && !caseComplete} />
+            <div className="grid grid-cols-2 gap-5">
+              <Field label="Código de la actuación notarial" hint="Numeración correlativa generada automáticamente." complete>
                 <div className="relative">
                   <TextInput value={draft.codigo} readOnly aria-readonly="true" className="touch-target w-full cursor-not-allowed rounded-xl border-2 border-line bg-stone-200 px-4 pr-12 font-bold text-muted" />
                   <LockKeyhole className="absolute right-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
                 </div>
               </Field>
-              <Field label="Fecha de registro" required {...fieldState(draft.fechaSolicitud)} error={submitted && !draft.fechaSolicitud ? 'Seleccione una fecha de registro.' : undefined}>
+              <Field label="Fecha de solicitud" required {...fieldState(draft.fechaSolicitud)} error={submitted && !draft.fechaSolicitud ? 'Seleccione la fecha de solicitud.' : undefined}>
                 <TextInput type="date" value={draft.fechaSolicitud} max="9999-12-31" onChange={(event) => patch({ fechaSolicitud: event.target.value })} />
               </Field>
-              <Field label="Tipo de actuación notarial" required {...fieldState(draft.tipo)} error={submitted && !draft.tipo.trim() ? 'Escriba el tipo de actuación.' : undefined}>
-                <TextInput value={draft.tipo} onChange={(event) => patch({ tipo: event.target.value })} placeholder="Ej.: Certificación de firma" />
+              <Field label="Tipo de acto notarial" required {...fieldState(draft.tipo)} error={submitted && !draft.tipo.trim() ? 'Seleccione el tipo de acto notarial.' : undefined}>
+                <Select value={draft.tipo} onChange={(event) => patch({ tipo: event.target.value })}>
+                  <option value="">¿Qué desea registrar?</option>
+                  {NOTARIAL_TYPES.map((group) => (
+                    <optgroup key={group.group} label={group.group}>
+                      {group.options.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </optgroup>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Lugar de atención o expedición" required {...fieldState(draft.lugarExpedicion)} error={submitted && !draft.lugarExpedicion.trim() ? 'Indique el lugar.' : undefined}>
+                <TextInput value={draft.lugarExpedicion} onChange={(event) => patch({ lugarExpedicion: event.target.value })} />
+              </Field>
+              <Field label="Fecha de atención o expedición" optional complete={Boolean(draft.fechaAtencion)}>
+                <TextInput type="date" value={draft.fechaAtencion} onChange={(event) => patch({ fechaAtencion: event.target.value })} />
               </Field>
               <Field label="Descripción breve del motivo" required {...fieldState(draft.asunto)} error={submitted && !draft.asunto.trim() ? 'Describa brevemente el motivo.' : undefined}>
                 <TextArea value={draft.asunto} onChange={(event) => patch({ asunto: event.target.value })} placeholder="Explique el motivo de la actuación" />
@@ -286,15 +311,15 @@ export function NotarialWizardPage() {
           </section>
         </Card>
 
-        <Card className={`h-full min-h-0 min-w-0 overflow-y-auto border-2 ${peopleComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${peopleComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={peopleSection} className="scroll-mt-5">
-            <SectionTitle number={2} title="Partes involucradas" description="Añada a todas las personas relacionadas con el caso." complete={peopleComplete} invalid={submitted && !peopleComplete} />
+            <SectionTitle number={2} title="Personas participantes" description="Comparecientes que intervienen en la actuación notarial." complete={peopleComplete} invalid={submitted && !peopleComplete} />
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <Button type="button" tone="secondary" className="min-h-16 px-6 text-lg" onClick={addPerson}>
-                <Plus size={28} strokeWidth={3} /> Añadir integrante
+                <Plus size={28} strokeWidth={3} /> Añadir participante
               </Button>
               <span className="inline-flex min-h-16 items-center gap-2 rounded-xl bg-cream px-5 font-extrabold text-forest">
-                <Users size={24} /> {draft.personas.length} {draft.personas.length === 1 ? 'involucrado' : 'involucrados'}
+                <Users size={24} /> {draft.personas.length} {draft.personas.length === 1 ? 'participante' : 'participantes'}
               </span>
             </div>
             <div className="space-y-5">
@@ -302,8 +327,8 @@ export function NotarialWizardPage() {
                 const complete = personIsComplete(person)
                 return (
                   <fieldset key={person.id} className={`rounded-2xl border-2 p-5 ${complete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'} ${PERSON_COLORS[index % PERSON_COLORS.length]}`}>
-                    <legend className="px-3 text-xl font-extrabold">Involucrado {index + 1} {complete ? <CheckCircle2 className="ml-2 inline text-success" /> : submitted ? <XCircle className="ml-2 inline text-urgent" /> : null}</legend>
-                    <div className="grid grid-cols-1 gap-5">
+                    <legend className="px-3 text-xl font-extrabold">Participante {index + 1} {complete ? <CheckCircle2 className="ml-2 inline text-success" /> : submitted ? <XCircle className="ml-2 inline text-urgent" /> : null}</legend>
+                    <div className="grid grid-cols-2 gap-5">
                       <Field label="Nombres" required {...fieldState(person.nombres)} error={submitted && !person.nombres.trim() ? 'Ingrese los nombres.' : undefined}>
                         <TextInput value={person.nombres} onChange={(event) => updatePerson(index, { nombres: event.target.value })} autoComplete="given-name" />
                       </Field>
@@ -330,9 +355,35 @@ export function NotarialWizardPage() {
                       <Field label="Dirección, comunidad o localidad" required {...fieldState(person.comunidad)} error={submitted && !person.comunidad.trim() ? 'Ingrese una ubicación.' : undefined}>
                         <TextInput value={person.comunidad} onChange={(event) => updatePerson(index, { comunidad: event.target.value })} placeholder="Ej.: Comunidad Santa Rosa" />
                       </Field>
-                      <Field label="Rol en el caso" required {...fieldState(person.rolEnCaso)} error={submitted && !person.rolEnCaso?.trim() ? 'Indique el rol en el caso.' : undefined}>
-                        <TextInput value={person.rolEnCaso ?? ''} onChange={(event) => updatePerson(index, { rolEnCaso: event.target.value })} placeholder="Ej.: Solicitante, testigo, declarante" />
+                      <Field label="Participación en la actuación" required {...fieldState(person.rolEnCaso)} error={submitted && !person.rolEnCaso?.trim() ? 'Indique cómo participa en la actuación.' : undefined}>
+                        <TextInput value={person.rolEnCaso ?? ''} onChange={(event) => updatePerson(index, { rolEnCaso: event.target.value })} placeholder="Ej.: Solicitante, declarante, testigo" />
                       </Field>
+                      <Field label="¿Actúa en representación de otra persona?" required complete={person.actuaEnRepresentacion !== undefined}>
+                        <Select value={person.actuaEnRepresentacion ? 'si' : 'no'} onChange={(event) => updatePerson(index, { actuaEnRepresentacion: event.target.value === 'si' })}>
+                          <option value="no">No</option><option value="si">Sí</option>
+                        </Select>
+                      </Field>
+                      {person.actuaEnRepresentacion ? (
+                        <>
+                          <Field label="Persona representada" required {...fieldState(person.personaRepresentada)}>
+                            <TextInput value={person.personaRepresentada ?? ''} onChange={(event) => updatePerson(index, { personaRepresentada: event.target.value })} />
+                          </Field>
+                          <Field label="Documento que acredita la representación" required {...fieldState(person.documentoRepresentacion)}>
+                            <TextInput value={person.documentoRepresentacion ?? ''} onChange={(event) => updatePerson(index, { documentoRepresentacion: event.target.value })} />
+                          </Field>
+                        </>
+                      ) : null}
+                      <Field label="¿Puede firmar?" required complete={person.puedeFirmar !== undefined}>
+                        <Select value={person.puedeFirmar === false ? 'no' : 'si'} onChange={(event) => updatePerson(index, { puedeFirmar: event.target.value === 'si' })}>
+                          <option value="si">Sí</option><option value="no">No</option>
+                        </Select>
+                      </Field>
+                      {person.puedeFirmar === false ? (
+                        <Field label="Forma de manifestar su voluntad" required complete={Boolean(person.usaHuella || person.testigoRuego)} invalid={submitted && !(person.usaHuella || person.testigoRuego)}>
+                          <label className="mr-5 inline-flex min-h-12 items-center gap-2"><input type="checkbox" checked={Boolean(person.usaHuella)} onChange={(event) => updatePerson(index, { usaHuella: event.target.checked })} /> Huella digital</label>
+                          <label className="inline-flex min-h-12 items-center gap-2"><input type="checkbox" checked={Boolean(person.testigoRuego)} onChange={(event) => updatePerson(index, { testigoRuego: event.target.checked })} /> Interviene testigo a ruego</label>
+                        </Field>
+                      ) : null}
                     </div>
                     {draft.personas.length > 1 ? <Button type="button" tone="ghost" className="mt-4 text-urgent" onClick={() => removePerson(index)}><Trash2 size={20} /> Quitar integrante</Button> : null}
                   </fieldset>
@@ -342,9 +393,9 @@ export function NotarialWizardPage() {
           </section>
         </Card>
 
-        <Card className={`h-full min-h-0 min-w-0 overflow-y-auto border-2 ${resultComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${resultComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={resultSection} className="scroll-mt-5">
-            <SectionTitle number={3} title="Resultados y documentación" description="Registre el resultado y adjunte los archivos de respaldo." complete={resultComplete} invalid={submitted && !resultComplete} />
+            <SectionTitle number={3} title="Resultado y registro" description="Cierre del acto, folio y documentos de respaldo." complete={resultComplete} invalid={submitted && !resultComplete} />
             <div className="space-y-5">
               <Field label="Resultado de la actuación" required {...fieldState(draft.resultado)} error={submitted && !draft.resultado.trim() ? 'Describa el resultado de la actuación.' : undefined}>
                 <TextArea value={draft.resultado} onChange={(event) => patch({ resultado: event.target.value })} placeholder="Describa el resultado obtenido" />
@@ -352,10 +403,18 @@ export function NotarialWizardPage() {
               <Field label="Fecha de entrega o conclusión" optional complete={Boolean(draft.fechaEntrega)}>
                 <TextInput type="date" value={draft.fechaEntrega} onChange={(event) => patch({ fechaEntrega: event.target.value })} />
               </Field>
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Folio / número de registro" hint="Se genera correlativamente." complete>
+                  <TextInput value={`Folio ${draft.folio}`} readOnly className="touch-target w-full cursor-not-allowed rounded-xl border-2 border-line bg-stone-200 px-4 font-bold text-muted" />
+                </Field>
+                <Field label="Referencia de documento físico" optional complete={Boolean(draft.referenciaDocumento.trim())}>
+                  <TextInput value={draft.referenciaDocumento} onChange={(event) => patch({ referenciaDocumento: event.target.value })} placeholder="Ej.: Carpeta o número de archivo" />
+                </Field>
+              </div>
               <Field label="Documentos adjuntos" optional complete={draft.adjuntos.length > 0} hint="Puede tomar una foto o seleccionar uno o varios documentos.">
                 <input ref={cameraInput} className="sr-only" type="file" accept="image/*" capture="environment" onChange={handleFiles} />
                 <input ref={documentInput} className="sr-only" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFiles} />
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Button type="button" tone="secondary" className="min-h-20 text-lg" onClick={() => cameraInput.current?.click()}><Camera size={28} /> Tomar foto</Button>
                   <Button type="button" tone="secondary" className="min-h-20 text-lg" onClick={() => documentInput.current?.click()}><FileText size={28} /> Cargar uno o varios archivos</Button>
                 </div>
@@ -374,15 +433,14 @@ export function NotarialWizardPage() {
             </div>
           </section>
         </Card>
-        </div>
 
         {submitted && !formComplete ? <div className="rounded-2xl border-2 border-urgent bg-urgent-soft px-4 py-2 font-extrabold text-urgent" role="alert"><XCircle className="mr-2 inline" />No se pudo guardar. Revise los campos obligatorios marcados en rojo; su información permanece en el formulario.</div> : null}
 
-        <div className="z-20 flex shrink-0 items-center justify-between gap-4 rounded-2xl border border-line bg-paper/95 p-3 shadow-xl backdrop-blur">
+        <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-2xl border border-line bg-paper/95 p-4 shadow-xl backdrop-blur">
           <Button type="button" tone="secondary" onClick={() => navigate('/actuaciones')}>Cancelar</Button>
           <div className="flex items-center gap-4">
             <span className={`font-bold ${formComplete ? 'text-success' : 'text-muted'}`}>{formComplete ? 'Formulario completo' : 'Complete los campos obligatorios'}</span>
-            <Button type="submit" className="px-8" disabled={uploading.length > 0}>Guardar actuación</Button>
+            <Button type="submit" className="px-8" disabled={uploading.length > 0}>Guardar actuación notarial</Button>
           </div>
         </div>
       </form>

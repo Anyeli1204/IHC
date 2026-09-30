@@ -26,5 +26,11 @@ export function emptyPerson(role: Person['participacion'] = 'solicitante'): Pers
     direccion: '',
     participacion: role,
     rolEnCaso: '',
+    actuaEnRepresentacion: false,
+    personaRepresentada: '',
+    documentoRepresentacion: '',
+    puedeFirmar: true,
+    usaHuella: false,
+    testigoRuego: false,
   }
 }

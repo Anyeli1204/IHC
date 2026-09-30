@@ -48,6 +48,12 @@ export interface Person {
   direccion?: string
   participacion: PersonRole
   rolEnCaso?: string
+  actuaEnRepresentacion?: boolean
+  personaRepresentada?: string
+  documentoRepresentacion?: string
+  puedeFirmar?: boolean
+  usaHuella?: boolean
+  testigoRuego?: boolean
 }
 
 export interface NotarialAttachment {
@@ -95,6 +101,7 @@ export interface NotarialRecord {
   syncStatus: SyncStatus
   fechaSolicitud: string
   fechaAtencion?: string
+  lugarExpedicion?: string
   tipo: string
   asunto: string
   estado: NotarialStatus
@@ -104,6 +111,7 @@ export interface NotarialRecord {
   fechaEntrega?: string
   referenciaDocumento?: string
   adjuntos?: NotarialAttachment[]
+  folio?: string
 }
 
 export interface CalendarActivity {
@@ -151,6 +159,7 @@ export interface NotarialDraft {
   codigo: string
   fechaSolicitud: string
   fechaAtencion: string
+  lugarExpedicion: string
   tipo: string
   asunto: string
   estado: NotarialStatus
@@ -160,4 +169,5 @@ export interface NotarialDraft {
   fechaEntrega: string
   referenciaDocumento: string
   adjuntos: NotarialAttachment[]
+  folio: string
 }

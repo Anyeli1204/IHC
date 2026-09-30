@@ -5,9 +5,21 @@ import { conflictLabels, formatLongDate, progressLabels, roleLabels } from '../.
 import { emptyPerson, nextCode, uid } from '../../lib/ids'
 import { useApp } from '../../store/AppContext'
 import { PeopleEditor, validatePeople } from '../../components/PeopleEditor'
-import { Button, ButtonLink, Card, Field, Help, Modal, Select, Stepper, TextArea, TextInput } from '../../components/ui'
+import { Button, ButtonLink, Card, Field, Help, Modal, Select, TextArea, TextInput } from '../../components/ui'
 
-const STEPS = ['Datos del caso', 'Partes involucradas', 'Primera actuación']
+function CaseSectionTitle({ number, title, complete, invalid }: { number: number; title: string; complete: boolean; invalid: boolean }) {
+  return (
+    <div className="sticky -top-5 z-10 mb-5 flex items-center justify-between border-b border-line bg-paper pb-4 pt-1">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-forest font-extrabold text-paper">{number}</span>
+        <h2 className="text-2xl font-extrabold">{title}</h2>
+      </div>
+      <span className={`rounded-full px-3 py-2 text-sm font-extrabold ${complete ? 'bg-success-soft text-success' : invalid ? 'bg-urgent-soft text-urgent' : 'bg-cream text-muted'}`}>
+        {complete ? '✓ Completa' : invalid ? '✕ Incompleta' : 'Por completar'}
+      </span>
+    </div>
+  )
+}
 
 function initialDraft(codigo: string): CaseDraft {
   return {
@@ -32,9 +44,9 @@ export function CaseWizardPage() {
   const { cases, isOnline, saveCase } = useApp()
   const navigate = useNavigate()
   const codigo = useMemo(() => nextCode('CJ', cases.map((c) => c.codigo)), [cases])
-  const [step, setStep] = useState(1)
   const [draft, setDraft] = useState<CaseDraft>(() => initialDraft(codigo))
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [attempted, setAttempted] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [leaveConfirm, setLeaveConfirm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -43,20 +55,18 @@ export function CaseWizardPage() {
     setDraft((prev) => ({ ...prev, ...partial }))
   }
 
-  function validateStep1() {
+  function validateAll() {
+    setAttempted(true)
     const next: Record<string, string> = {}
     if (!draft.tipoConflicto) next.tipoConflicto = 'Seleccione la materia del caso para continuar.'
     if (!draft.motivo.trim()) next.motivo = 'Describa la controversia para continuar.'
     if (!draft.lugarRegistro.trim()) next.lugarRegistro = 'Indique el lugar donde se registra el caso.'
     if (!draft.fechaRegistro) next.fechaRegistro = 'Indique la fecha de registro.'
-    setErrors(next)
-    return Object.keys(next).length === 0
-  }
-
-  function validateStep2() {
     const message = validatePeople(draft.personas)
-    setErrors(message ? { personas: message } : {})
-    return !message
+    if (message) next.personas = message
+    if (!draft.descripcionInicial.trim()) next.descripcionInicial = 'Describa la primera actuación judicial.'
+    setErrors(next)
+    if (Object.keys(next).length === 0) save()
   }
 
   function hasDraftContent() {
@@ -113,7 +123,6 @@ export function CaseWizardPage() {
     }
     saveCase(record)
     setSavedId(record.id)
-    setStep(4)
     setSaving(false)
   }
 
@@ -132,6 +141,10 @@ export function CaseWizardPage() {
     })
     event.target.value = ''
   }
+
+  const dataComplete = Boolean(draft.fechaRegistro && draft.lugarRegistro.trim() && draft.tipoConflicto && draft.motivo.trim())
+  const peopleComplete = !validatePeople(draft.personas)
+  const actionComplete = Boolean(draft.tipoActuacionInicial && draft.fechaActuacionInicial && draft.descripcionInicial.trim())
 
   if (savedId) {
     return (
@@ -166,12 +179,10 @@ export function CaseWizardPage() {
       </Button>
       <h1 className="mb-2 text-3xl font-extrabold">Registrar caso judicial</h1>
       <Help>Esta ficha digital conserva la información del Libro Único de Actuaciones Judiciales.</Help>
-      <div className="mt-6">
-        <Stepper step={step} labels={STEPS} />
-      </div>
-
-      {step === 1 ? (
-        <Card className="space-y-5">
+      <form className="mt-6 space-y-6" onSubmit={(event) => { event.preventDefault(); validateAll() }} noValidate>
+        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${dataComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+          <CaseSectionTitle number={1} title="Datos del caso" complete={dataComplete} invalid={attempted && !dataComplete} />
+          <div className="grid grid-cols-2 gap-5">
           <Field label="Código del caso" hint="Numeración correlativa generada automáticamente." htmlFor="codigo">
             <TextInput id="codigo" value={draft.codigo} readOnly className="touch-target w-full cursor-not-allowed rounded-xl border-2 border-line bg-stone-200 px-4 font-bold text-muted" />
           </Field>
@@ -204,19 +215,11 @@ export function CaseWizardPage() {
           <Field label="Observaciones" optional htmlFor="obs">
             <TextArea id="obs" value={draft.observaciones} onChange={(e) => patch({ observaciones: e.target.value })} />
           </Field>
-          <div className="flex flex-wrap gap-3">
-            <Button tone="secondary" type="button" onClick={requestCancel}>
-              Cancelar
-            </Button>
-            <Button type="button" onClick={() => validateStep1() && setStep(2)}>
-              Continuar
-            </Button>
           </div>
         </Card>
-      ) : null}
 
-      {step === 2 ? (
-        <Card className="space-y-5">
+        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${peopleComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+          <CaseSectionTitle number={2} title="Partes involucradas" complete={peopleComplete} invalid={attempted && !peopleComplete} />
           {errors.personas ? <p className="font-semibold text-rose">{errors.personas}</p> : null}
           <PeopleEditor
             people={draft.personas}
@@ -224,19 +227,11 @@ export function CaseWizardPage() {
             roles={['solicitante', 'invitado', 'testigo']}
             help="Personas que participan en el caso. El nombre, la identificación, el domicilio y el rol son obligatorios; el teléfono es opcional."
           />
-          <div className="flex flex-wrap gap-3">
-            <Button tone="secondary" type="button" onClick={() => setStep(1)}>
-              Atrás
-            </Button>
-            <Button type="button" onClick={() => validateStep2() && setStep(3)}>
-              Continuar
-            </Button>
-          </div>
         </Card>
-      ) : null}
 
-      {step === 3 ? (
-        <Card className="space-y-5">
+        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${actionComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+          <CaseSectionTitle number={3} title="Primera actuación judicial" complete={actionComplete} invalid={attempted && !actionComplete} />
+          <div className="grid grid-cols-2 gap-5">
           <Field label="Tipo de actuación judicial" required htmlFor="actuacion-tipo" hint="La materia identifica el caso; este campo identifica la actuación realizada.">
             <Select id="actuacion-tipo" value={draft.tipoActuacionInicial} onChange={(e) => patch({ tipoActuacionInicial: e.target.value as CaseDraft['tipoActuacionInicial'] })}>
               {(Object.keys(progressLabels) as CaseDraft['tipoActuacionInicial'][]).map((key) => (
@@ -269,6 +264,7 @@ export function CaseWizardPage() {
               onChange={(e) => patch({ proximaAtencion: e.target.value })}
             />
           </Field>
+          </div>
           <div className="rounded-xl bg-cream p-4">
             <h2 className="mb-2 text-xl font-extrabold">Revisar información</h2>
             <p>
@@ -286,16 +282,13 @@ export function CaseWizardPage() {
               {draft.proximaAtencion ? formatLongDate(draft.proximaAtencion) : 'No indicada'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button tone="secondary" type="button" onClick={() => setStep(2)}>
-              Editar
-            </Button>
-            <Button type="button" onClick={save} disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar caso'}
-            </Button>
-          </div>
         </Card>
-      ) : null}
+
+        <div className="sticky bottom-4 z-20 flex items-center justify-between rounded-2xl border border-line bg-paper/95 p-4 shadow-xl backdrop-blur">
+          <Button tone="secondary" type="button" onClick={requestCancel}>Cancelar</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Guardar caso judicial'}</Button>
+        </div>
+      </form>
 
       {leaveConfirm ? (
         <Modal title="¿Salir sin guardar?" onClose={() => setLeaveConfirm(false)}>

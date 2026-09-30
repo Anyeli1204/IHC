@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manual de usuario — Justicia Cercana</title>
+    <style>
+      :root {
+        --ink: #1c1917;
+        --muted: #44403c;
+        --forest: #0f766e;
+        --line: #d6d3d1;
+        --paper: #fff;
+        --cream: #f5f5f4;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        line-height: 1.5;
+        color: var(--ink);
+        background: var(--cream);
+        margin: 0;
+        padding: 1.5rem;
+        max-width: 48rem;
+        margin-inline: auto;
+      }
+      h1 {
+        color: var(--forest);
+        font-size: 1.75rem;
+      }
+      h2 {
+        margin-top: 2rem;
+        font-size: 1.25rem;
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 0.25rem;
+      }
+      h3 {
+        font-size: 1.05rem;
+        margin-top: 1.25rem;
+      }
+      p,
+      li {
+        font-size: 1.05rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+      }
+      .offline {
+        background: #fed7aa;
+        color: #9a3412;
+      }
+      .online {
+        background: #bfdbfe;
+        color: #1d4ed8;
+      }
+      .box {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+      @media print {
+        body {
+          background: white;
+        }
+        .no-print {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <p class="no-print"><strong>Documento offline:</strong> guarde este archivo en la tableta. No requiere Internet para leerlo.</p>
+    <h1>Justicia Cercana — Manual de usuario</h1>
+    <p>Juzgado de Paz — prototipo para tableta 10″ horizontal. Textos claros, trabajo con o sin conexión.</p>
+
+    <h2>1. Inicio</h2>
+    <p>Tres acciones: registrar caso, actuación notarial y ver agenda. Paneles <em>Para atender</em> y <em>Reuniones y actividades</em>.</p>
+    <p>Barra superior: estado de conexión, sincronización pendiente y enlace <strong>Ayuda</strong>.</p>
+
+    <h2>2. Casos judiciales</h2>
+    <p>Asistente de registro, listado, detalle en tres columnas (datos, personas, avances). Guardado local sin red.</p>
+
+    <h2>3. Actuaciones notariales</h2>
+    <p>Registro, consulta y aviso si existe un posible duplicado.</p>
+
+    <h2>4. Agenda</h2>
+    <ul>
+      <li>Vistas <strong>Mes</strong> y <strong>Día</strong>; botón <strong>+</strong> para nuevo evento.</li>
+      <li>Estados: programada (amarillo), realizada (verde), cancelada (rojo).</li>
+      <li>Planilla horaria: arrastrar para definir inicio, fin y duración.</li>
+    </ul>
+
+    <h2>5. Sin conexión y sincronización</h2>
+    <div class="box">
+      <span class="badge offline">Sin conexión</span> Consultar, registrar y editar; manual de ayuda; datos en la tableta.
+    </div>
+    <div class="box">
+      <span class="badge online">Con conexión</span> Enviar cambios al sistema (sincronizar).
+    </div>
+    <p>Al guardar sin red: «Guardado en esta tableta» / «Pendiente de sincronización».</p>
+
+    <h2>6. Colores de referencia</h2>
+    <ul>
+      <li>Verde en barra: con Internet.</li>
+      <li>Naranja en barra: sin Internet.</li>
+      <li>Morado: cambios por sincronizar.</li>
+    </ul>
+
+    <h2>7. Preguntas frecuentes</h2>
+    <h3>¿La ayuda funciona sin Internet?</h3>
+    <p>Sí, dentro de la app (menú Ayuda) y con este archivo HTML guardado en el dispositivo.</p>
+    <h3>¿Pierdo datos si cierro el navegador?</h3>
+    <p>No; permanecen en el almacenamiento local de esta tableta hasta sincronizar.</p>
+
+    <p class="no-print" style="margin-top: 2rem; color: var(--muted); font-size: 0.95rem">
+      Versión integrada en la aplicación web Justicia Cercana. Use Imprimir → Guardar como PDF si lo prefiere.
+    </p>
+  </body>
+</html>
