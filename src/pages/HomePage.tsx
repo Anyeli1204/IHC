@@ -41,11 +41,11 @@ export function HomePage() {
           ¿Qué necesita hacer?
         </h2>
         <div className="grid grid-cols-3 gap-4">
-          <BigAction to="/casos/nuevo" icon={<Scale size={40} aria-hidden />} lines={['Registrar', 'un caso']} />
+          <BigAction to="/casos" icon={<Scale size={40} aria-hidden />} lines={['Casos', 'judiciales']} />
           <BigAction
-            to="/actuaciones/nueva"
+            to="/actuaciones"
             icon={<FileText size={40} aria-hidden />}
-            lines={['Registrar actuación', 'notarial']}
+            lines={['Actuaciones', 'notariales']}
           />
           <BigAction to="/agenda" icon={<CalendarDays size={40} aria-hidden />} lines={['Ver agenda']} />
         </div>
