@@ -11,6 +11,18 @@ export function loadState(): PersistedState {
     if (!Array.isArray(parsed.cases) || !Array.isArray(parsed.notarials) || !Array.isArray(parsed.activities)) {
       return seedState()
     }
+    if ((parsed.schemaVersion ?? 1) < 2) {
+      const demo = seedState()
+      const existingIds = new Set(parsed.activities.map((activity) => activity.id))
+      return {
+        ...parsed,
+        schemaVersion: 2,
+        activities: [
+          ...parsed.activities,
+          ...demo.activities.filter((activity) => activity.id.startsWith('demo-') && !existingIds.has(activity.id)),
+        ],
+      }
+    }
     return parsed
   } catch {
     return seedState()

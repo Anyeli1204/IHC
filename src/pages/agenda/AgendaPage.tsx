@@ -160,11 +160,14 @@ export function AgendaPage() {
 
       <Link
         to={`/agenda/nueva?fecha=${view === 'dia' ? selectedDay : APP_TODAY}`}
-        className="fixed bottom-8 right-[max(1.5rem,calc(50%-36rem))] z-40 flex h-20 w-20 items-center justify-center rounded-full border-4 border-paper bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 text-ink shadow-[0_8px_32px_rgba(234,179,8,0.55)] transition hover:scale-105 hover:shadow-[0_12px_40px_rgba(234,179,8,0.65)] focus-visible:outline focus-visible:outline-4 focus-visible:outline-forest"
+        className="group fixed bottom-8 right-[max(1.5rem,calc(50%-36rem))] z-40 flex h-20 w-20 items-center justify-center rounded-full border-4 border-paper bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 text-ink shadow-[0_8px_32px_rgba(234,179,8,0.55)] transition hover:scale-105 hover:shadow-[0_12px_40px_rgba(234,179,8,0.65)] focus-visible:outline focus-visible:outline-4 focus-visible:outline-forest"
         aria-label="Añadir nuevo evento"
         title="Nuevo evento"
       >
         <Plus size={44} strokeWidth={3} aria-hidden />
+        <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-xl bg-ink px-4 py-2 text-base font-extrabold text-paper opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" role="tooltip">
+          Nuevo evento
+        </span>
       </Link>
 
       {detail ? <ActivityDetailModal item={detail} onClose={() => setDetail(null)} /> : null}

@@ -263,7 +263,7 @@ export function NotarialWizardPage() {
       <Help>Los campos completos se marcarán en verde. Si falta información al guardar, permanecerá todo lo escrito y se señalarán los campos pendientes.</Help>
 
       <form className="mt-6 space-y-6" onSubmit={validateAndSave} noValidate>
-        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${caseComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`border-2 ${caseComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={firstSection} className="scroll-mt-5">
             <SectionTitle number={1} title="Datos del acto notarial" description="Información que se incorpora al registro del Libro Notarial." complete={caseComplete} invalid={submitted && !caseComplete} />
             <div className="grid grid-cols-2 gap-5">
@@ -311,7 +311,7 @@ export function NotarialWizardPage() {
           </section>
         </Card>
 
-        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${peopleComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`border-2 ${peopleComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={peopleSection} className="scroll-mt-5">
             <SectionTitle number={2} title="Personas participantes" description="Comparecientes que intervienen en la actuación notarial." complete={peopleComplete} invalid={submitted && !peopleComplete} />
             <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -393,7 +393,7 @@ export function NotarialWizardPage() {
           </section>
         </Card>
 
-        <Card className={`max-h-[72vh] overflow-y-auto border-2 ${resultComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`border-2 ${resultComplete ? 'border-success' : submitted ? 'border-urgent' : 'border-line'}`}>
           <section ref={resultSection} className="scroll-mt-5">
             <SectionTitle number={3} title="Resultado y registro" description="Cierre del acto, folio y documentos de respaldo." complete={resultComplete} invalid={submitted && !resultComplete} />
             <div className="space-y-5">

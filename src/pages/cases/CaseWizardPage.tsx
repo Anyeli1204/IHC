@@ -180,7 +180,7 @@ export function CaseWizardPage() {
       <h1 className="mb-2 text-3xl font-extrabold">Registrar caso judicial</h1>
       <Help>Esta ficha digital conserva la información del Libro Único de Actuaciones Judiciales.</Help>
       <form className="mt-6 space-y-6" onSubmit={(event) => { event.preventDefault(); validateAll() }} noValidate>
-        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${dataComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`space-y-5 border-2 ${dataComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
           <CaseSectionTitle number={1} title="Datos del caso" complete={dataComplete} invalid={attempted && !dataComplete} />
           <div className="grid grid-cols-2 gap-5">
           <Field label="Código del caso" hint="Numeración correlativa generada automáticamente." htmlFor="codigo">
@@ -218,7 +218,7 @@ export function CaseWizardPage() {
           </div>
         </Card>
 
-        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${peopleComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`space-y-5 border-2 ${peopleComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
           <CaseSectionTitle number={2} title="Partes involucradas" complete={peopleComplete} invalid={attempted && !peopleComplete} />
           {errors.personas ? <p className="font-semibold text-rose">{errors.personas}</p> : null}
           <PeopleEditor
@@ -229,7 +229,7 @@ export function CaseWizardPage() {
           />
         </Card>
 
-        <Card className={`max-h-[72vh] space-y-5 overflow-y-auto border-2 ${actionComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
+        <Card className={`space-y-5 border-2 ${actionComplete ? 'border-success' : attempted ? 'border-urgent' : 'border-line'}`}>
           <CaseSectionTitle number={3} title="Primera actuación judicial" complete={actionComplete} invalid={attempted && !actionComplete} />
           <div className="grid grid-cols-2 gap-5">
           <Field label="Tipo de actuación judicial" required htmlFor="actuacion-tipo" hint="La materia identifica el caso; este campo identifica la actuación realizada.">

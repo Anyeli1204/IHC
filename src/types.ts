@@ -131,6 +131,7 @@ export interface CalendarActivity {
 }
 
 export interface PersistedState {
+  schemaVersion?: number
   cases: CaseRecord[]
   notarials: NotarialRecord[]
   activities: CalendarActivity[]
