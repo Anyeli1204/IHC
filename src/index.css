@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;1,6..12,400&display=swap');
+
+@import "tailwindcss";
+
+
+
+@theme {
+
+  --font-sans: "Nunito Sans", "Segoe UI", system-ui, sans-serif;
+
+
+
+  --color-ink: #1c1917;
+
+  --color-muted: #44403c;
+
+
+
+  /* Marca / acciones principales */
+
+  --color-forest: #0f766e;
+
+  --color-forest-dark: #115e59;
+
+  --color-forest-soft: #ccfbf1;
+
+
+
+  --color-cream: #f5f5f4;
+
+  --color-paper: #ffffff;
+
+  --color-line: #d6d3d1;
+
+
+
+  /* Semánticos — alto contraste para estados */
+
+  --color-success: #15803d;
+
+  --color-success-soft: #bbf7d0;
+
+
+
+  --color-warning: #c2410c;
+
+  --color-warning-soft: #ffedd5;
+
+
+
+  --color-urgent: #b91c1c;
+
+  --color-urgent-soft: #fecaca;
+
+
+
+  --color-info: #1d4ed8;
+
+  --color-info-soft: #bfdbfe;
+
+
+
+  --color-pending: #6d28d9;
+
+  --color-pending-soft: #ddd6fe;
+
+
+
+  --color-offline: #9a3412;
+
+  --color-offline-soft: #fed7aa;
+
+
+
+  /* Compatibilidad con clases existentes */
+
+  --color-amber: #c2410c;
+
+  --color-amber-soft: #ffedd5;
+
+  --color-rose: #b91c1c;
+
+  --color-rose-soft: #fecaca;
+
+  --color-sky: #1d4ed8;
+
+  --color-sky-soft: #bfdbfe;
+
+  /* Lienzo tableta 10" horizontal (1280×800) */
+  --width-tablet: 80rem;
+  --min-width-tablet: 64rem;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+#root {
+  width: 100%;
+  min-width: var(--min-width-tablet);
+  max-width: var(--width-tablet);
+  min-height: 100%;
+  margin-inline: auto;
+}
+
+
+
+button,
+
+a,
+
+input,
+
+select,
+
+textarea {
+
+  font: inherit;
+
+}
+
+
+
+:focus-visible {
+
+  outline: 3px solid var(--color-forest);
+
+  outline-offset: 2px;
+
+}
+
+
+
+.touch-target {
+
+  min-height: 52px;
+
+  min-width: 52px;
+
+}
+
+
